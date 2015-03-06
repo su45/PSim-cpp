@@ -27,7 +27,7 @@ int main(int argc, const char * argv[]) {
     }
     else if(comm.rank == 1) {
         int msg = comm.recv(0);
-        printf("@process %d (pid %d) =>\nmessage received from process 0: %d\n", comm.rank, getpid(), msg);
+        printf("@process %d (pid %d) => message received from process 0: %d\n", comm.rank, getpid(), msg);
     }
     
     return 0;
