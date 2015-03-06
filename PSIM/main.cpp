@@ -1,9 +1,9 @@
 /*
  *  main.cpp
  *  PSIM
- *
  *  Created by Sam Uddin on 3/2/15.
- *  Copyright (c) 2015 Sam Uddin. All rights reserved.
+ *
+ *  Driver program. Various tests of the C++ PSim API
  */
 
 #include <iostream>
@@ -12,23 +12,70 @@
 #include <functional>
 #include "psim.cpp"
 
-// Driver program. Implementation of Prim's algorithm using the C++ PSim API:
+//TEST MACROs
+#define TOPOLOGY 1
+#define BCAST 0
+#define PRIM_SEQUENTIAL 0
+#define PRIM_PARALLEL 0
+
+static void topology_test() {
+    static std::function<bool(int, int, int)> f;
+    int i, j, p;
+    
+    f = SWITCH;
+    i = 0; j = 235; p = 23487;
+    printf("Topology: SWITCH, i = %d, j = %d, p = %d.\nAre i and j connected => %d\n\n", i, j, p, f(i, j, p));
+    
+    f = MESH2;
+    i = 14; j = 9; p = 16;
+    printf("Topology: MESH2, i = %d, j = %d, p = %d.\nAre i and j connected => %d\n\n", i, j, p, f(i, j, p));
+    
+    i = 14; j = 10; p = 16;
+    printf("Topology: MESH2, i = %d, j = %d, p = %d.\nAre i and j connected => %d\n\n", i, j, p, f(i, j, p));
+    
+    f = TORUS1;
+    i = 0; j = 4; p = 5;
+    printf("Topology: TORUS1, i = %d, j = %d, p = %d.\nAre i and j connected => %d\n\n", i, j, p, f(i, j, p));
+}
+
+static void bcast_test() {
+    int p = 8;
+    PSim comm(p, SWITCH);
+    sleep(1);
+    int msg = (comm.rank == 0) ? 112358 : 0;
+    printf("@process %d (pid %d) => message PRE-BROADCAST is: %d\n", comm.rank, getpid(), msg);
+    sleep(1);
+    msg = comm.one2all_broadcast(0, msg);
+    sleep(1);
+    printf("@process %d (pid %d) => message POST-BROADCAST is: %d\n", comm.rank, getpid(), msg);
+}
+
+
+
+/*
+ *  MAIN()
+ */
 
 int main(int argc, const char * argv[]) {
     
-    PSim comm(3, SWITCH);
-    sleep(1);
-
-    //printf("mul: %d\n", mul(mul(4, 6), 3));
+#if(TOPOLOGY)
+    topology_test();
+#endif
     
-    if(comm.rank == 0) {
-        //printf("*** Hello world from rank %d @ pid %d. ***\n", comm.rank, getpid());
-        comm.send(1, 123456789);
-    }
-    else if(comm.rank == 1) {
-        int msg = comm.recv(0);
-        printf("@process %d (pid %d) => message received from process 0: %d\n", comm.rank, getpid(), msg);
-    }
+#if(BCAST)
+    bcast_test();
+#endif
+    
+#if(PRIM_SEQUENTIAL)
+    
+#endif
+    
+#if(PRIM_PARALLEL)
+    
+#endif
+    
     
     return 0;
 }
+
+

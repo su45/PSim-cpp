@@ -1,10 +1,10 @@
-//
-//  psim.cpp
-//  PSIM
-//
-//  Created by Sam Uddin on 3/2/15.
-//  Copyright (c) 2015 Sam Uddin. All rights reserved.
-//
+/*
+ *  psim.cpp
+ *  PSIM
+ *  Created by Sam Uddin on 3/2/15.
+ *
+ *  Ported from psim.py by Massimo DiPierro.
+ */
 
 #include <stdio.h>
 #include <cstdlib>
@@ -14,14 +14,13 @@
 #include <math.h>
 
 //topology lambdas to test connectedness. signiture: (int, int, int) => bool
-//parameter p is unused for most topology lambdas
 
 static std::function<bool(int, int, int)> BUS = [](int i, int j, int p) { return true; };
 static std::function<bool(int, int, int)> SWITCH = [](int i, int j, int p) { return true; };
 
 static std::function<bool(int, int, int)> MESH1 = [](int i, int j, int p)
                                                     {
-                                                        return ((i-j)^2) == 1;
+                                                        return pow((i-j), 2) == 1;
                                                     };
 
 static std::function<bool(int, int, int)> TORUS1 = [](int i, int j, int p)
@@ -31,15 +30,15 @@ static std::function<bool(int, int, int)> TORUS1 = [](int i, int j, int p)
 
 static std::function<bool(int, int, int)> MESH2 = [](int i, int j, int p)
                                                     {
-                                                        int q = static_cast<int>(sqrtf(p) + 0.1f);
-                                                        int a = (i%q - j%q)^2;
-                                                        int b = (i/q - j/q)^2;
+                                                        int q = static_cast<int>(sqrt(p) + 0.1f);
+                                                        int a = pow((i%q - j%q), 2);
+                                                        int b = pow((i/q - j/q), 2);
                                                         return (a == 1 && b == 0) || (a == 0 && b == 1);
                                                     };
 
 static std::function<bool(int, int, int)> TORUS2 = [](int i, int j, int p)
                                                     {
-                                                        int q = static_cast<int>(sqrtf(p) + 0.1f);
+                                                        int q = static_cast<int>(sqrt(p) + 0.1f);
                                                         int a = (i%q - j%q + q) % q;
                                                         int b = (i/q - j/q + q) % q;
                                                         int c = (j%q - i%q + q) % q;
@@ -70,16 +69,24 @@ struct pipeFD {
 class PSim {
 public:
     
-    //constructor taking # of processors and a functor reference to a topology lambda 
+    /* 
+     * CONSTRUCTOR
+     * params:  int p: # of processors
+     *          std::function<bool(int, int, int)>& topo: a functor reference to a topology lambda
+     */
     PSim(int p, std::function<bool(int, int, int)>& topo) {
         nprocs = p;
         topology = topo;
         
-        //dynamically allocate pipe_arr HERE (p x p matrix)
+        //dynamically allocate pipe_arr (p x p matrix of pipes)
+        pipe_arr = new pipeFD*[p];
+        for(int i = 0; i < p; i++) {
+            pipe_arr[i] = new pipeFD[p];
+        }
         
-        //create a pair of file descriptors and pack a pipeFD struct into each cell (replace '3' with 'p')
-        for(int i = 0; i < 3; i++) {
-            for(int j = 0; j < 3; j++) {
+        //create a pair of file descriptors and pack a pipeFD struct into each cell
+        for(int i = 0; i < p; i++) {
+            for(int j = 0; j < p; j++) {
                 pipeFD temp;
                 pipe(temp.fd);
                 pipe_arr[i][j] = temp;
@@ -98,14 +105,18 @@ public:
         }
     }
     
-    //destructor
+    //DESTRUCTOR
     ~PSim() {
         //free the pipe_arr
+        for(int i = 0; i < this->nprocs; i++) {
+            delete [] pipe_arr[i];
+        }
+        delete [] pipe_arr;
         //printf("ENDING: process rank %d @ pid %d.\n", this->rank, getpid());
     }
     
     /*
-     * METHODS:
+     * CLASS METHODS:
      */
     
     /*
@@ -145,6 +156,25 @@ public:
         }
     }
     
+    /*
+     * Broadcast
+     */
+    int one2all_broadcast(int source, int value) {
+        if(this->rank == source) {
+            for(int i = 0; i < this->nprocs; i++) {
+                if(!(i == source)) {
+                    this->_send(i, value);
+                }
+            }
+        }
+        else {
+            value = this->_recv(source);
+        }
+        return value;
+    }
+    
+    
+    
 
     /*
      * PUBLIC MEMBERS:
@@ -152,7 +182,6 @@ public:
     int nprocs;
     std::function<bool(int, int, int)> topology; //hold the lambda functor for this network's topology
     int rank;
-    pipeFD pipe_arr[3][3]; //should be **pipe_arr
-
+    pipeFD **pipe_arr;
     
 };
