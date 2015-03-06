@@ -12,6 +12,9 @@
 #include <functional>
 #include <unistd.h>
 #include <math.h>
+#include <vector>
+#include <iterator>
+#include <numeric>
 
 //topology lambdas to test connectedness. signiture: (int, int, int) => bool
 
@@ -93,13 +96,13 @@ public:
             }
         }
         this->rank = 0;
-        printf("STARTING: process rank %d @ pid %d.\n", this->rank, getpid());
+        //printf("STARTING: process rank %d @ pid %d.\n", this->rank, getpid());
         //fork n-1 processes
         pid_t pid;
         for(int i = 1; i < p; i++) {
             if((pid = fork()) == 0) {
                 this->rank = i;
-                printf("STARTING: process rank %d @ pid %d.\n", this->rank, getpid());
+                //printf("STARTING: process rank %d @ pid %d.\n", this->rank, getpid());
                 break;
             }
         }
@@ -171,6 +174,28 @@ public:
         return value;
     }
     
+    
+    
+    /*
+     *  Reduce
+     */
+    int all2one_reduce(int destination, int value, std::function<int(int, int)>& binop) {
+        this->_send(destination, value);
+        std::vector<int> v;
+        int result;
+        if(this->rank == destination) {
+            for(int i = 0; i < this->nprocs; i++) {
+                v.push_back(this->_recv(i));
+            }
+            //pause to ensure that values from all other processes are received at destination. Kind of hacky.
+            sleep(2);
+            result = std::accumulate(std::begin(v)+1, std::end(v), *std::begin(v), binop);
+        }
+        else {
+            result = 0;
+        }
+        return result;
+    }
     
     
 

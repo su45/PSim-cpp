@@ -14,9 +14,13 @@
 
 //TEST MACROs
 #define TOPOLOGY 0
-#define BCAST 1
+#define BCAST 0
+#define REDUCE 1
 #define PRIM_SEQUENTIAL 0
 #define PRIM_PARALLEL 0
+
+
+
 
 static void topology_test() {
     
@@ -40,14 +44,19 @@ static void topology_test() {
 }
 
 static void bcast_test() {
-    int p = 8;
-    PSim comm(p, SWITCH);
+    PSim comm(8, SWITCH);
     sleep(1);
     int msg = (comm.rank == 0) ? 112358 : 0;
     printf("@process %d (pid %d) => message PRE-BROADCAST is: %d\n", comm.rank, getpid(), msg);
     sleep(2);
     msg = comm.one2all_broadcast(0, msg);
     printf("@process %d (pid %d) => message POST-BROADCAST is: %d\n", comm.rank, getpid(), msg);
+}
+
+static void reduce_test() {
+    PSim comm(6, SWITCH);
+    int red_sum = comm.all2one_reduce(0, comm.rank, sum);
+    printf("@process %d (pid %d) => reduction sum result is: %d\n", comm.rank, getpid(), red_sum);
 }
 
 
@@ -64,6 +73,10 @@ int main(int argc, const char * argv[]) {
     
 #if(BCAST)
     bcast_test();
+#endif
+    
+#if(REDUCE)
+    reduce_test();
 #endif
     
 #if(PRIM_SEQUENTIAL)
