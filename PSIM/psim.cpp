@@ -107,12 +107,10 @@ public:
     
     //DESTRUCTOR
     ~PSim() {
-        //free the pipe_arr
         for(int i = 0; i < this->nprocs; i++) {
             delete [] pipe_arr[i];
         }
         delete [] pipe_arr;
-        //printf("ENDING: process rank %d @ pid %d.\n", this->rank, getpid());
     }
     
     /*

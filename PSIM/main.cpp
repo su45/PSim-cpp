@@ -13,12 +13,13 @@
 #include "psim.cpp"
 
 //TEST MACROs
-#define TOPOLOGY 1
-#define BCAST 0
+#define TOPOLOGY 0
+#define BCAST 1
 #define PRIM_SEQUENTIAL 0
 #define PRIM_PARALLEL 0
 
 static void topology_test() {
+    
     static std::function<bool(int, int, int)> f;
     int i, j, p;
     
@@ -44,9 +45,8 @@ static void bcast_test() {
     sleep(1);
     int msg = (comm.rank == 0) ? 112358 : 0;
     printf("@process %d (pid %d) => message PRE-BROADCAST is: %d\n", comm.rank, getpid(), msg);
-    sleep(1);
+    sleep(2);
     msg = comm.one2all_broadcast(0, msg);
-    sleep(1);
     printf("@process %d (pid %d) => message POST-BROADCAST is: %d\n", comm.rank, getpid(), msg);
 }
 
