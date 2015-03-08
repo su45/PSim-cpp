@@ -45,7 +45,6 @@ static void topology_test() {
 
 static void bcast_test() {
     PSim comm(8, SWITCH);
-    sleep(1);
     int msg = (comm.rank == 0) ? 112358 : 0;
     printf("@process %d (pid %d) => message PRE-BROADCAST is: %d\n", comm.rank, getpid(), msg);
     sleep(2);
@@ -54,9 +53,9 @@ static void bcast_test() {
 }
 
 static void reduce_test() {
-    PSim comm(6, SWITCH);
+    PSim comm(5, SWITCH);
     int red_sum = comm.all2one_reduce(0, comm.rank, sum);
-    printf("@process %d (pid %d) => reduction sum result is: %d\n", comm.rank, getpid(), red_sum);
+    printf("@process %d (pid %d) => reduction result of sum(rank 0 ... rank 5) is: %d\n", comm.rank, getpid(), red_sum);
 }
 
 
