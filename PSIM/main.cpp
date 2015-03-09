@@ -1,7 +1,7 @@
 /*
  *  main.cpp
  *  PSIM
- *  Created by Sam Uddin on 3/2/15.
+ *  Created by Sam Uddin
  *
  *  Driver program. Various tests of the C++ PSim API
  */
@@ -55,7 +55,7 @@ static void bcast_test() {
 static void reduce_test() {
     PSim comm(5, SWITCH);
     int red_sum = comm.all2one_reduce(0, comm.rank, sum);
-    printf("@process %d (pid %d) => reduction result of sum(rank 0 ... rank 5) is: %d\n", comm.rank, getpid(), red_sum);
+    printf("@process %d (pid %d) => reduction result of sum(rank 0 ... rank 4) is: %d\n", comm.rank, getpid(), red_sum);
 }
 
 

@@ -1,9 +1,9 @@
 /*
  *  psim.cpp
  *  PSIM
- *  Created by Sam Uddin on 3/2/15.
+ *  Created by Sam Uddin
  *
- *  Ported from psim.py by Massimo DiPierro.
+ *  Ported from Massimo DiPierro's psim.py
  */
 
 #include <stdio.h>
@@ -56,7 +56,7 @@ static std::function<bool(int, int, int)> TREE = [](int i, int j, int p)
                                                                j == static_cast<int>((i-1)/2);
                                                     };
 
-//binop lambdas for reduce/accumulate with signiture: (int, int) => int
+//commutative binop lambdas for reduce/accumulate with signiture: (int, int) => int
 
 static std::function<int(int, int)> sum = std::plus<int>();
 static std::function<int(int, int)> mul = std::multiplies<int>();
@@ -177,7 +177,21 @@ public:
     /*
      *  Scatter and Collect
      */
-    
+    std::vector<int> one2all_scatter(int source, std::vector<int> data) {
+        if(this->rank == source) {
+            int h = (int)data.size() / this->nprocs;
+            int r = (int)data.size() % this->nprocs;
+            
+            if(r != 0) {
+                h++;
+            }
+            
+            
+            
+        }
+        
+        return std::vector<int>(0);
+    }
     
     
     /*
