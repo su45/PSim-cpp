@@ -121,7 +121,7 @@ public:
      */
     
     /*
-     * send integer data to process j
+     * send integer data to process j (TODO: serialize, add templates/generics)
      */
     void _send(int j, int data) {
         char sendbuf[10];
@@ -139,7 +139,7 @@ public:
     }
     
     /*
-     * receive integer data from process j
+     * receive integer data from process j (TODO: serialize, add templates/generics)
      */
     int _recv(int j) {
         char recvbuf[10];

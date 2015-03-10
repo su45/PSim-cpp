@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		743DD3921AA55831006ECF81 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 743DD3911AA55831006ECF81 /* main.cpp */; };
 		743DD3991AA55BED006ECF81 /* psim.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 743DD3981AA55BED006ECF81 /* psim.cpp */; };
+		74C8A8961AAE7BE600C9CE07 /* libboost_serialization-mt.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 74C8A8951AAE7BE600C9CE07 /* libboost_serialization-mt.dylib */; };
+		74C8A8981AAE7C2E00C9CE07 /* libboost_iostreams-mt.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 74C8A8971AAE7C2E00C9CE07 /* libboost_iostreams-mt.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -27,6 +29,8 @@
 		743DD38E1AA55831006ECF81 /* PSIM */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PSIM; sourceTree = BUILT_PRODUCTS_DIR; };
 		743DD3911AA55831006ECF81 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		743DD3981AA55BED006ECF81 /* psim.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = psim.cpp; sourceTree = "<group>"; };
+		74C8A8951AAE7BE600C9CE07 /* libboost_serialization-mt.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libboost_serialization-mt.dylib"; path = "../../../../../opt/local/lib/libboost_serialization-mt.dylib"; sourceTree = "<group>"; };
+		74C8A8971AAE7C2E00C9CE07 /* libboost_iostreams-mt.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libboost_iostreams-mt.dylib"; path = "../../../../../opt/local/lib/libboost_iostreams-mt.dylib"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -34,6 +38,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				74C8A8981AAE7C2E00C9CE07 /* libboost_iostreams-mt.dylib in Frameworks */,
+				74C8A8961AAE7BE600C9CE07 /* libboost_serialization-mt.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -43,6 +49,8 @@
 		743DD3851AA55831006ECF81 = {
 			isa = PBXGroup;
 			children = (
+				74C8A8971AAE7C2E00C9CE07 /* libboost_iostreams-mt.dylib */,
+				74C8A8951AAE7BE600C9CE07 /* libboost_serialization-mt.dylib */,
 				743DD3901AA55831006ECF81 /* PSIM */,
 				743DD38F1AA55831006ECF81 /* Products */,
 			);
@@ -206,6 +214,14 @@
 		743DD3961AA55831006ECF81 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				FRAMEWORK_SEARCH_PATHS = /opt/local/lib;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					/opt/local/include,
+				);
+				LIBRARY_SEARCH_PATHS = /opt/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -213,6 +229,14 @@
 		743DD3971AA55831006ECF81 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				FRAMEWORK_SEARCH_PATHS = /opt/local/lib;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					/opt/local/include,
+				);
+				LIBRARY_SEARCH_PATHS = /opt/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -236,6 +260,7 @@
 				743DD3971AA55831006ECF81 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
