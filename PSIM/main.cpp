@@ -18,9 +18,11 @@
 #define BOOST_SERIALIZATION 0
 #define TOPOLOGY 0
 #define BCAST 0
+#define ALL_BCAST 1
 #define SCATTER 0
-#define COLLECT 1
+#define COLLECT 0
 #define REDUCE 0
+#define ALL_REDUCE 0
 #define PRIM_SEQUENTIAL 0
 #define PRIM_PARALLEL 0
 
@@ -95,6 +97,19 @@ static void bcast_test() {
 }
 
 
+static void all_bcast_test() {
+    printf("All processes send their rank^2 to all other processes:\n\n");
+    PSim comm(6, SWITCH);
+    std::vector<int> v = comm.all2all_broadcast(pow(comm.rank, 2));
+    
+    printf("@process %d (pid %d) => My collected values are: ", comm.rank, getpid());
+    for(std::vector<int>::iterator it = v.begin(); it != v.end(); it++) {
+        std::cout << *it << " ";
+    }
+    std::cout << std::endl;
+}
+
+
 static void scatter_test() {
     std::vector<int> v1 = {33, 5, 6543, 540, 23, 537, 345, 234, 4, 65, 946};
     printf("Original vector: ");
@@ -114,9 +129,9 @@ static void scatter_test() {
 
 
 static void collect_test() {
-    printf("All processes sending the square of their rank to process #3:\n\n");
+    printf("All processes send their rank^3 to process #3:\n\n");
     PSim comm(6, SWITCH);
-    std::vector<int> v = comm.all2one_collect(3, pow(comm.rank, 2));
+    std::vector<int> v = comm.all2one_collect(3, pow(comm.rank, 3));
     
     printf("@process %d (pid %d) => My collected vector by rank is: ", comm.rank, getpid());
     for(std::vector<int>::iterator it = v.begin(); it != v.end(); it++) {
@@ -129,9 +144,15 @@ static void collect_test() {
 static void reduce_test() {
     PSim comm(5, SWITCH);
     int red_sum = comm.all2one_reduce(0, comm.rank, sum);
-    printf("@process %d (pid %d) => reduction result of sum(rank 0 ... rank 4) is: %d\n", comm.rank, getpid(), red_sum);
+    printf("@process %d (pid %d) => reduction result of sum of ranks is: %d\n", comm.rank, getpid(), red_sum);
 }
 
+
+static void reduce_all_test() {
+    PSim comm(6, SWITCH);
+    int red_sum = comm.all2all_reduce(comm.rank, sum);
+    printf("@process %d (pid %d) => reduction result of sum of all ranks is: %d\n", comm.rank, getpid(), red_sum);
+}
 
 
 /*
@@ -151,6 +172,10 @@ int main(int argc, const char * argv[]) {
 #if(BCAST)
     bcast_test();
 #endif
+
+#if(ALL_BCAST)
+    all_bcast_test();
+#endif
     
 #if(SCATTER)
     scatter_test();
@@ -163,6 +188,10 @@ int main(int argc, const char * argv[]) {
 #if(REDUCE)
     reduce_test();
 #endif
+
+#if(ALL_REDUCE)
+    reduce_all_test();
+#endif
     
 #if(PRIM_SEQUENTIAL)
     
@@ -171,7 +200,6 @@ int main(int argc, const char * argv[]) {
 #if(PRIM_PARALLEL)
     
 #endif
-    
     
     return 0;
 }

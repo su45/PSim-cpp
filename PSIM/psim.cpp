@@ -149,7 +149,7 @@ public:
             _send(j, data);
         }
         else {
-            //log topology violation
+            //throw topology violation
         }
     }
     
@@ -178,7 +178,7 @@ public:
             return _recv(j);
         }
         else {
-            //log topology violation
+            //throw topology violation
             return -1;
         }
     }
@@ -204,6 +204,19 @@ public:
         return value;
     }
     
+    std::vector<int> all2all_broadcast(int value) {
+        std::vector<int> vect, ret_vect;
+        vect.resize(this->nprocs);
+        ret_vect.resize(this->nprocs);
+        vect = all2one_collect(0, value);
+        if(this->rank == 0) {
+            for(int i = 0; i < this->nprocs; i++) {
+                _send_vector(i, vect);
+            }
+        }
+        ret_vect = _recv_vector(0);
+        return ret_vect;
+    }
     
     
     /*
@@ -254,10 +267,9 @@ public:
         int result;
         if(this->rank == destination) {
             for(int i = 0; i < this->nprocs; i++) {
-                v.push_back(this->_recv(i));
+                int tmp = this->_recv(i);
+                v.push_back(tmp);
             }
-            //pause to ensure that values from all other processes are received at destination. Kind of hacky.
-            sleep(2);
             result = std::accumulate(std::begin(v)+1, std::end(v), *std::begin(v), binop);
         }
         else {
@@ -266,8 +278,21 @@ public:
         return result;
     }
     
+    int all2all_reduce(int value, std::function<int(int, int)>& binop) {
+        int reduction = all2one_reduce(0, value, binop);
+        int all_reduction = one2all_broadcast(0, reduction);
+        return all_reduction;
+    }
     
-
+    
+    /*
+     *  Barrier
+     */
+    void barrier() {
+        all2all_broadcast(0);
+    }
+    
+    
     /*
      * PUBLIC MEMBERS:
      */
