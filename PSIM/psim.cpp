@@ -127,13 +127,15 @@ public:
      */
     
     /*
-     * send data to process j (TODO: serialize, add templates/generics)
+     * Send data to process j. (TODO: Templates/generics)
      */
-    //plain int data
+    
+    //Serialize plain int data and send to process j
     void _send(int j, int data) {
-        char sendbuf[10];
-        sprintf(sendbuf, "%d", data);
-        write((this->pipe_arr[this->rank][j]).fd[1], sendbuf, 10);
+        boost::iostreams::stream_buffer<boost::iostreams::file_descriptor_sink> sbw((this->pipe_arr[this->rank][j]).fd[1], boost::iostreams::never_close_handle);
+        std::ostream os(&sbw);
+        boost::archive::text_oarchive oa(os);
+        oa << data;
     }
     
     //Serialize vector<int> and send to process j
@@ -154,13 +156,17 @@ public:
     }
     
     /*
-     * receive data from process j (TODO: serialize, add templates/generics)
+     *  Receive data from process j. (TODO: Templates/generics)
      */
-    //plain int data
+    
+    //De-serialize plain int data from process j
     int _recv(int j) {
-        char recvbuf[10];
-        read((this->pipe_arr[j][this->rank]).fd[0], recvbuf, 10);
-        return atoi(recvbuf);
+        int tmp;
+        boost::iostreams::stream_buffer<boost::iostreams::file_descriptor_source> sbr((this->pipe_arr[j][this->rank]).fd[0], boost::iostreams::never_close_handle);
+        std::istream is(&sbr);
+        boost::archive::text_iarchive ia(is);
+        ia >> tmp;
+        return tmp;
     }
     
     //De-serialize vector<int> from process j
@@ -184,7 +190,7 @@ public:
     }
     
     /*
-     *  GLOBAL COMMUNICATION PATTERNS
+     *  GLOBAL COMMUNICATION PATTERNS:
      */
     
     /*

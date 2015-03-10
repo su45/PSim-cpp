@@ -14,12 +14,12 @@
 #include "psim.cpp"
 
 
-//TEST MACROs
+//TEST MACROS
 #define BOOST_SERIALIZATION 0
 #define TOPOLOGY 0
 #define BCAST 0
-#define ALL_BCAST 1
-#define SCATTER 0
+#define ALL_BCAST 0
+#define SCATTER 1
 #define COLLECT 0
 #define REDUCE 0
 #define ALL_REDUCE 0
