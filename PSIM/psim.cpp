@@ -16,6 +16,12 @@
 #include <iterator>
 #include <numeric>
 
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/iostreams/device/file_descriptor.hpp>
+#include <boost/iostreams/stream.hpp>
+
 //topology lambdas to test connectedness. signiture: (int, int, int) => bool
 
 static std::function<bool(int, int, int)> BUS = [](int i, int j, int p) { return true; };
@@ -81,13 +87,13 @@ public:
         nprocs = p;
         topology = topo;
         
-        //dynamically allocate pipe_arr (p x p matrix of pipes)
+        //dynamically allocate pipe_arr (to serve as a p x p matrix of pipes)
         pipe_arr = new pipeFD*[p];
         for(int i = 0; i < p; i++) {
             pipe_arr[i] = new pipeFD[p];
         }
         
-        //create a pair of file descriptors and pack a pipeFD struct into each cell
+        //create a pair of file descriptors via pipe() and pack a pipeFD struct into each cell
         for(int i = 0; i < p; i++) {
             for(int j = 0; j < p; j++) {
                 pipeFD temp;
@@ -121,12 +127,21 @@ public:
      */
     
     /*
-     * send integer data to process j (TODO: serialize, add templates/generics)
+     * send data to process j (TODO: serialize, add templates/generics)
      */
+    //plain int data
     void _send(int j, int data) {
         char sendbuf[10];
         sprintf(sendbuf, "%d", data);
         write((this->pipe_arr[this->rank][j]).fd[1], sendbuf, 10);
+    }
+    
+    //Serialize vector<int> and send to process j
+    void _send_vector(int j, std::vector<int> data) {
+        boost::iostreams::stream_buffer<boost::iostreams::file_descriptor_sink> sbw((this->pipe_arr[this->rank][j]).fd[1], boost::iostreams::never_close_handle);
+        std::ostream os(&sbw);
+        boost::archive::text_oarchive oa(os);
+        oa << data;
     }
     
     void send(int j, int data) {
@@ -139,12 +154,23 @@ public:
     }
     
     /*
-     * receive integer data from process j (TODO: serialize, add templates/generics)
+     * receive data from process j (TODO: serialize, add templates/generics)
      */
+    //plain int data
     int _recv(int j) {
         char recvbuf[10];
         read((this->pipe_arr[j][this->rank]).fd[0], recvbuf, 10);
         return atoi(recvbuf);
+    }
+    
+    //De-serialize vector<int> from process j
+    std::vector<int> _recv_vector(int j) {
+        std::vector<int> outvect;
+        boost::iostreams::stream_buffer<boost::iostreams::file_descriptor_source> sbr((this->pipe_arr[j][this->rank]).fd[0], boost::iostreams::never_close_handle);
+        std::istream is(&sbr);
+        boost::archive::text_iarchive ia(is);
+        ia >> outvect;
+        return outvect;
     }
     
     int recv(int j) {
@@ -158,7 +184,11 @@ public:
     }
     
     /*
-     * Broadcast
+     *  GLOBAL COMMUNICATION PATTERNS
+     */
+    
+    /*
+     *  Broadcast
      */
     int one2all_broadcast(int source, int value) {
         if(this->rank == source) {
@@ -174,6 +204,8 @@ public:
         return value;
     }
     
+    
+    
     /*
      *  Scatter and Collect
      */
@@ -181,16 +213,35 @@ public:
         if(this->rank == source) {
             int h = (int)data.size() / this->nprocs;
             int r = (int)data.size() % this->nprocs;
-            
             if(r != 0) {
                 h++;
             }
-            
-            
-            
+            for(int i = 0; i < this->nprocs-1; i++) {
+                std::vector<int> tv( data.begin() + (i*h), data.begin() +(i*h) + (h) );
+                _send_vector(i, tv);
+            }
+            //the last vector is often shorter than the previous ones, so we manually send the last
+            //vector to ensure we aren't overshooting the iterator and sending 0s
+            std::vector<int> tvl( data.begin() + ((this->nprocs-1)*h), data.end() );
+            _send_vector((this->nprocs-1), tvl);
         }
-        
-        return std::vector<int>(0);
+        std::vector<int> outvect = _recv_vector(source);
+        return outvect;
+    }
+    
+    std::vector<int> all2one_collect(int destination, int data) {
+        _send(destination, data);
+        std::vector<int> collection_by_rank;
+        collection_by_rank.resize(this->nprocs);
+        if(this->rank == destination) {
+            for(int i = 0; i < this->nprocs; i++) {
+                collection_by_rank[i] = _recv(i);
+            }
+        }
+        else {
+            collection_by_rank.clear();
+        }
+        return collection_by_rank;
     }
     
     

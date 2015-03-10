@@ -13,28 +13,25 @@
 #include <functional>
 #include "psim.cpp"
 
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/iostreams/device/file_descriptor.hpp>
-#include <boost/iostreams/stream.hpp>
 
 //TEST MACROs
 #define BOOST_SERIALIZATION 0
 #define TOPOLOGY 0
 #define BCAST 0
+#define SCATTER 0
+#define COLLECT 1
 #define REDUCE 0
 #define PRIM_SEQUENTIAL 0
 #define PRIM_PARALLEL 0
 
 
 static void boost_serialization_test() {
-    //Boost Serialization over pipes Test
+    //Test Boost Serialization over pipes using Boost Archives and Boost File Descriptors
     pid_t pid;
     int fd[2];
     pipe(fd);
     
-    //Serialize vector v1 in parent and send via i/o stream over pipe FD to child
+    //Serialize vector v1 in parent and send via i/o stream over pipe file descriptor to child
     if((pid = fork()) != 0) {
         std::vector<int> v1 = {33, 5, 6543, 540, 23, 537, 345, 234, 4, 65, 946};
         printf("parent @pid:%d => vector v1 to be serialized:\n", getpid());
@@ -66,8 +63,8 @@ static void boost_serialization_test() {
     }
 }
 
+
 static void topology_test() {
-    
     static std::function<bool(int, int, int)> f;
     int i, j, p;
     
@@ -87,6 +84,7 @@ static void topology_test() {
     printf("Topology: TORUS1, i = %d, j = %d, p = %d.\nAre i and j connected => %d\n\n", i, j, p, f(i, j, p));
 }
 
+
 static void bcast_test() {
     PSim comm(8, SWITCH);
     int msg = (comm.rank == 0) ? 112358 : 0;
@@ -95,6 +93,38 @@ static void bcast_test() {
     msg = comm.one2all_broadcast(0, msg);
     printf("@process %d (pid %d) => message POST-BROADCAST is: %d\n", comm.rank, getpid(), msg);
 }
+
+
+static void scatter_test() {
+    std::vector<int> v1 = {33, 5, 6543, 540, 23, 537, 345, 234, 4, 65, 946};
+    printf("Original vector: ");
+    for(std::vector<int>::iterator it = v1.begin(); it != v1.end(); it++) {
+        std::cout << *it << " ";
+    }
+    std::cout << std::endl << std::endl;
+    PSim comm(4, SWITCH);
+    std::vector<int> v = comm.one2all_scatter(0, v1);
+    
+    printf("@process %d (pid %d) => My unique vector slice is:\n", comm.rank, getpid());
+    for(std::vector<int>::iterator it = v.begin(); it != v.end(); it++) {
+        std::cout << *it << " ";
+    }
+    std::cout << std::endl;
+}
+
+
+static void collect_test() {
+    printf("All processes sending the square of their rank to process #3:\n\n");
+    PSim comm(6, SWITCH);
+    std::vector<int> v = comm.all2one_collect(3, pow(comm.rank, 2));
+    
+    printf("@process %d (pid %d) => My collected vector by rank is: ", comm.rank, getpid());
+    for(std::vector<int>::iterator it = v.begin(); it != v.end(); it++) {
+        std::cout << *it << " ";
+    }
+    std::cout << std::endl;
+}
+
 
 static void reduce_test() {
     PSim comm(5, SWITCH);
@@ -120,6 +150,14 @@ int main(int argc, const char * argv[]) {
     
 #if(BCAST)
     bcast_test();
+#endif
+    
+#if(SCATTER)
+    scatter_test();
+#endif
+    
+#if(COLLECT)
+    collect_test();
 #endif
     
 #if(REDUCE)
