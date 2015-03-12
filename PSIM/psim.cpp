@@ -22,7 +22,7 @@
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
 
-//topology lambdas to test connectedness. signiture: (int, int, int) => bool
+//Topology lambdas to test connectedness. Signiture: (int, int, int) => bool
 
 static std::function<bool(int, int, int)> BUS = [](int i, int j, int p) { return true; };
 static std::function<bool(int, int, int)> SWITCH = [](int i, int j, int p) { return true; };
@@ -62,7 +62,7 @@ static std::function<bool(int, int, int)> TREE = [](int i, int j, int p)
                                                                j == static_cast<int>((i-1)/2);
                                                     };
 
-//commutative binop lambdas for reduce/accumulate with signiture: (int, int) => int
+//Commutative binop lambdas for reduce/accumulate with signiture: (int, int) => int
 
 static std::function<int(int, int)> sum = std::plus<int>();
 static std::function<int(int, int)> mul = std::multiplies<int>();
@@ -70,7 +70,10 @@ static std::function<int(int, int)> max = [](int a, int b) { return ((a > b) ? a
 static std::function<int(int, int)> min = [](int a, int b) { return ((a > b) ? b : a); };
 
 
-//a struct containing a pair of file descriptors. fd[0]: read , fd[1]: write
+/* 
+ *  A struct containing a pair of file descriptors. fd[0]: read , fd[1]: write
+ *  Each cell in the p x p matrix of pipes will contain a pipeFD struct
+ */
 struct pipeFD {
     int fd[2];
 };
@@ -127,7 +130,7 @@ public:
      */
     
     /*
-     * Send data to process j. (TODO: Templates/generics)
+     * Send integer data to process j. (TODO: Templates/generics)
      */
     
     //Serialize plain int data and send to process j
@@ -156,7 +159,7 @@ public:
     }
     
     /*
-     *  Receive data from process j. (TODO: Templates/generics)
+     *  Receive integer data from process j. (TODO: Templates/generics)
      */
     
     //De-serialize plain int data from process j
@@ -194,7 +197,7 @@ public:
      */
     
     /*
-     *  Broadcast
+     *  Broadcast int 'value' to all processes from process 'source'
      */
     int one2all_broadcast(int source, int value) {
         if(this->rank == source) {
@@ -210,6 +213,10 @@ public:
         return value;
     }
     
+    
+    /*
+     *  Broadcast int 'value' to all processes
+     */
     std::vector<int> all2all_broadcast(int value) {
         std::vector<int> vect, ret_vect;
         vect.resize(this->nprocs);
@@ -226,7 +233,8 @@ public:
     
     
     /*
-     *  Scatter and Collect
+     *  Scatter slices the input vector<int> 'data' at process 'source' and sends a unique
+     *  vector<int> to each process
      */
     std::vector<int> one2all_scatter(int source, std::vector<int> data) {
         if(this->rank == source) {
@@ -248,6 +256,11 @@ public:
         return outvect;
     }
     
+    
+    /*
+     *  Collect gathers values (input int 'data') from each process and stores them in a
+     *  vector<int> ordered by process at the process specified by 'destination'
+     */
     std::vector<int> all2one_collect(int destination, int data) {
         _send(destination, data);
         std::vector<int> collection_by_rank;
@@ -265,7 +278,8 @@ public:
     
     
     /*
-     *  Reduce
+     *  All to one reduction returning the reduction of each process's 'value' using
+     *  the functor 'binop'. The result is stored is process 'destination.'
      */
     int all2one_reduce(int destination, int value, std::function<int(int, int)>& binop) {
         this->_send(destination, value);
@@ -284,6 +298,11 @@ public:
         return result;
     }
     
+    
+    /*
+     *  All to all reduction returning the reduction of each process's 'value' using
+     *  the functor 'binop'. The result is broadcast to every process from process 0.
+     */
     int all2all_reduce(int value, std::function<int(int, int)>& binop) {
         int reduction = all2one_reduce(0, value, binop);
         int all_reduction = one2all_broadcast(0, reduction);
