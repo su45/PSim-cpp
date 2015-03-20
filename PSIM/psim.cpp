@@ -24,6 +24,8 @@
 
 #include "primsAlgorithm.h"
 
+//------------------------------------------------------------------------------------------------
+
 //Topology lambdas to test connectedness. Signiture: (int, int, int) => bool
 
 static std::function<bool(int, int, int)> BUS = [](int i, int j, int p) { return true; };
@@ -73,6 +75,8 @@ static std::function<int(int, int)> min = [](int a, int b) { return ((a > b) ? b
 
 //Binop for comparing Edge objects against each other by weight: (Edge, Edge) => Edge
 static std::function<Edge(Edge, Edge)> edgemin = [](Edge a, Edge b) {return ((a.weight > b.weight) ? b : a); };
+
+//------------------------------------------------------------------------------------------------
 
 /* 
  *  A struct containing a pair of file descriptors. fd[0]: read , fd[1]: write
@@ -129,6 +133,7 @@ public:
         delete [] pipe_arr;
     }
     
+    //------------------------------------------------------------------------------------------------
     /*
      * CLASS METHODS:
      */
@@ -153,6 +158,14 @@ public:
         oa << data;
     }
     
+    //Serialize Edge and send to process j
+    void _send_Edge(int j, Edge data) {
+        boost::iostreams::stream_buffer<boost::iostreams::file_descriptor_sink> sbw((this->pipe_arr[this->rank][j]).fd[1], boost::iostreams::never_close_handle);
+        std::ostream os(&sbw);
+        boost::archive::text_oarchive oa(os);
+        oa << data;
+    }
+    
     void send(int j, int data) {
         if(this->topology(this->rank, j, this->nprocs)) {
             _send(j, data);
@@ -161,9 +174,11 @@ public:
             //throw topology violation
         }
     }
+    //------------------------------------------------------------------------------------------------
     
     /*
      *  Receive integer data from process j. (TODO: Templates/generics)
+     *
      */
     
     //De-serialize plain int data from process j
@@ -186,6 +201,16 @@ public:
         return outvect;
     }
     
+    //De-serialize Edge from process j
+    Edge _recv_Edge(int j) {
+        Edge outEdge;
+        boost::iostreams::stream_buffer<boost::iostreams::file_descriptor_source> sbr((this->pipe_arr[j][this->rank]).fd[0], boost::iostreams::never_close_handle);
+        std::istream is(&sbr);
+        boost::archive::text_iarchive ia(is);
+        ia >> outEdge;
+        return outEdge;
+    }
+    
     int recv(int j) {
         if(this->topology(this->rank, j, this->nprocs)) {
             return _recv(j);
@@ -195,6 +220,7 @@ public:
             return -1;
         }
     }
+    //------------------------------------------------------------------------------------------------
     
     /*
      *  GLOBAL COMMUNICATION PATTERNS:
@@ -217,6 +243,22 @@ public:
         return value;
     }
     
+    /*
+     *  Broadcast Edge 'value' to all processes from process 'source'
+     */
+    Edge one2all_broadcast_E(int source, Edge value) {
+        if(this->rank == source) {
+            for(int i = 0; i < this->nprocs; i++) {
+                if(!(i == source)) {
+                    this->_send_Edge(i, value);
+                }
+            }
+        }
+        else {
+            value = this->_recv_Edge(source);
+        }
+        return value;
+    }
     
     /*
      *  Broadcast int 'value' to all processes

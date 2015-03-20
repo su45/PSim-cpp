@@ -126,7 +126,7 @@ void Prim::run_sequential() {
     std::cout << "MST edges (weight): \n";
     for(std::unordered_set<Edge, HashEdge>::iterator treeIt = T.begin(); treeIt != T.end(); treeIt++) {
         Edge ed = *treeIt;
-        std::cout << ed.e[0] << " " << ed.e[1] << " (" << ed.weight << ") " << std::endl;
+        std::cout << ed;
     }
 }
 

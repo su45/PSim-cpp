@@ -50,6 +50,11 @@ struct Edge {
                 );
     }
     
+    friend std::ostream& operator<<(std::ostream & os, const Edge& ed) {
+        os << ed.e[0] << " " << ed.e[1] << " (" << ed.weight << ") " << std::endl;
+        return os;
+    }
+    
     void set(int u, int v, int w) {
         e[0] = u;
         e[1] = v;
@@ -70,6 +75,9 @@ struct HashEdge {
         return std::hash<int>()(edge.e[0]) + std::hash<int>()(edge.e[1]) ;
     }
 };
+
+
+
 
 enum PrimEnum{
     SEQUENTIAL,

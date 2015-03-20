@@ -246,7 +246,33 @@ int main(int argc, const char * argv[]) {
 #endif
     
     
+//    PSim comm(6, SWITCH);
+//    Edge pre;
+//    Edge post(0, 4, 6);
+//    Edge e = (comm.rank == 0) ? post : pre;
+//    printf("@process %d (pid %d) => message PRE-BROADCAST is:", comm.rank, getpid());
+//    std::cout << e;
+//    sleep(1);
+//    e = comm.one2all_broadcast_E(0, e);
+//    printf("@process %d (pid %d) => message POST-BROADCAST is:", comm.rank, getpid());
+//    std::cout << e;
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     return 0;
+    
 }
 
 
