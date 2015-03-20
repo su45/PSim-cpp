@@ -14,6 +14,7 @@
 #include <unordered_set>
 #include <set>
 #include <vector>
+#include <fstream>
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -70,19 +71,29 @@ struct HashEdge {
     }
 };
 
+enum PrimEnum{
+    SEQUENTIAL,
+    PARALLEL
+};
+
 
 class Prim {
 public:
     
-    Prim(const char* filename);
+    Prim(const char* filename, PrimEnum);
     ~Prim();
+    void run();
     
-    
+    PrimEnum type;
     int nVerts;
     int nEdges;
     int **adjMatrix;
     std::set<int> X;
-    std::set<Edge> T;
+    std::unordered_set<Edge, HashEdge> T;
+    
+private:
+    void run_sequential();
+    void run_parallel();
     
 };
 

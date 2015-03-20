@@ -235,100 +235,10 @@ int main(int argc, const char * argv[]) {
     
 #if(PRIM_SEQUENTIAL)
     
-
+    Prim P("/Users/SamUddin/Desktop/graph1.txt", SEQUENTIAL);
+    P.run();
     
-    //open and read file of weighted undirected graph
-    int nVerts, nEdges;
-    std::ifstream infs("/Users/SamUddin/Desktop/graph1.txt");
-    std::cout << "Undirected Graph\n";
-    infs >> nVerts;
-    infs >> nEdges;
-    std::cout << "Vertices: " << nVerts << "\nEdges: " << nEdges << std::endl;
-    
-    //Dynamically allocate adjMat to serve as a nVerts x nVerts adjacency matrix for
-    //the weighted undirected graph
-    int **adjMat;
-    adjMat = new int*[nVerts];
-    for(int i = 0; i < nVerts; i++) {
-        adjMat[i] = new int[nVerts];
-    }
-    
-    //Zero out the adjaceny matrix
-    for(int i = 0; i < nVerts; i++) {
-        for(int j = 0; j < nVerts; j++) {
-            adjMat[i][j] = 0;
-        }
-    }
-    
-    int u, v, weight;
-    for (int i = 0; i < nEdges; i++) {
-        infs >> u;
-        infs >> v;
-        infs >> weight;
-        adjMat[u][v] = weight;
-        adjMat[v][u] = weight;
-    }
-    infs.close();
-    
-    //Print a representation of the adjacency matrix
-    for(int i = 0; i < nVerts; i++) {
-        for(int j = 0; j < nVerts; j++) {
-            std::cout << adjMat[i][j] << " ";
-        }
-        std::cout << std::endl;
-    }
-    
-    std::set<int> X;
-   
-    //We need an unordered_set<Edge> here with a custom hash function:
-    std::unordered_set<Edge, HashEdge> T;
- 
-    
-    
-    //start at an arbitrary node -- 0
-    X.insert(0);
-    
-    while (X.size() != nVerts) {
-        Edge edgy;
-        int d = 0;
         
-        //For each element x in set X, add Edge(x, k) to crossing if k is NOT in set X
-         
-        for(std::set<int>::iterator it = X.begin(); it != X.end(); it++) {
-            int x = *it;
-            for(int k = 0; k < nVerts; k++) {
-                
-                //if k is NOT in set X
-                if(X.find(k) == X.end()) {
-                    int link = adjMat[x][k];
-                    if(link != 0) {
-                        if(d == 0 || link < d) {
-                            edgy.set(x, k, adjMat[x][k]);
-                            d = link;
-                        }
-                    }
-                }
-            }
-        }
-        T.insert(edgy);        //Insert Edge edgy into the MST
-        X.insert(edgy.e[1]);   //Add the new vertex to set X
-    }
-    
-    //Print the Edges of the MST
-    std::cout << "-------------------\n";
-    for(std::unordered_set<Edge, HashEdge>::iterator treeIt = T.begin(); treeIt != T.end(); treeIt++) {
-        Edge ed = *treeIt;
-        
-        std::cout << ed.e[0] << " " << ed.e[1] << " " << ed.weight << std::endl;
-    }
-    
-    //Clean up
-    for(int i = 0; i < nVerts; i++){
-        delete adjMat[i];
-    }
-    delete [] adjMat;
-    
-    
 #endif
     
 #if(PRIM_PARALLEL)
