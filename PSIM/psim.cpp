@@ -22,6 +22,8 @@
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
 
+#include "primsAlgorithm.h"
+
 //Topology lambdas to test connectedness. Signiture: (int, int, int) => bool
 
 static std::function<bool(int, int, int)> BUS = [](int i, int j, int p) { return true; };
@@ -69,6 +71,8 @@ static std::function<int(int, int)> mul = std::multiplies<int>();
 static std::function<int(int, int)> max = [](int a, int b) { return ((a > b) ? a : b); };
 static std::function<int(int, int)> min = [](int a, int b) { return ((a > b) ? b : a); };
 
+//Binop for comparing Edge objects against each other by weight: (Edge, Edge) => Edge
+static std::function<Edge(Edge, Edge)> edgemin = [](Edge a, Edge b) {return ((a.weight > b.weight) ? b : a); };
 
 /* 
  *  A struct containing a pair of file descriptors. fd[0]: read , fd[1]: write

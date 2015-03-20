@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		743DD3921AA55831006ECF81 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 743DD3911AA55831006ECF81 /* main.cpp */; };
 		743DD3991AA55BED006ECF81 /* psim.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 743DD3981AA55BED006ECF81 /* psim.cpp */; };
+		7459396A1ABB74F900766B1A /* primsAlgorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 745939681ABB74F900766B1A /* primsAlgorithm.cpp */; };
 		74C8A8961AAE7BE600C9CE07 /* libboost_serialization-mt.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 74C8A8951AAE7BE600C9CE07 /* libboost_serialization-mt.dylib */; };
 		74C8A8981AAE7C2E00C9CE07 /* libboost_iostreams-mt.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 74C8A8971AAE7C2E00C9CE07 /* libboost_iostreams-mt.dylib */; };
 /* End PBXBuildFile section */
@@ -29,6 +30,8 @@
 		743DD38E1AA55831006ECF81 /* PSIM */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PSIM; sourceTree = BUILT_PRODUCTS_DIR; };
 		743DD3911AA55831006ECF81 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		743DD3981AA55BED006ECF81 /* psim.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = psim.cpp; sourceTree = "<group>"; };
+		745939681ABB74F900766B1A /* primsAlgorithm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = primsAlgorithm.cpp; sourceTree = "<group>"; };
+		745939691ABB74F900766B1A /* primsAlgorithm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = primsAlgorithm.h; sourceTree = "<group>"; };
 		74C8A8951AAE7BE600C9CE07 /* libboost_serialization-mt.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libboost_serialization-mt.dylib"; path = "../../../../../opt/local/lib/libboost_serialization-mt.dylib"; sourceTree = "<group>"; };
 		74C8A8971AAE7C2E00C9CE07 /* libboost_iostreams-mt.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libboost_iostreams-mt.dylib"; path = "../../../../../opt/local/lib/libboost_iostreams-mt.dylib"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -69,6 +72,8 @@
 			children = (
 				743DD3911AA55831006ECF81 /* main.cpp */,
 				743DD3981AA55BED006ECF81 /* psim.cpp */,
+				745939681ABB74F900766B1A /* primsAlgorithm.cpp */,
+				745939691ABB74F900766B1A /* primsAlgorithm.h */,
 			);
 			path = PSIM;
 			sourceTree = "<group>";
@@ -129,6 +134,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7459396A1ABB74F900766B1A /* primsAlgorithm.cpp in Sources */,
 				743DD3991AA55BED006ECF81 /* psim.cpp in Sources */,
 				743DD3921AA55831006ECF81 /* main.cpp in Sources */,
 			);

@@ -12,22 +12,24 @@
 #include <string>
 #include <functional>
 #include "psim.cpp"
+#include "primsAlgorithm.h"
 
 
-//TEST MACROS
-#define BOOST_SERIALIZATION 0
+//TEST MACROS (turn on or off for various tests of PSim-cpp's functionality)
+#define BOOST_SERIALIZATION_VECT 0
+#define BOOST_SERIALIZATION_EDGE 0
 #define TOPOLOGY 0
 #define BCAST 0
 #define ALL_BCAST 0
-#define SCATTER 1
+#define SCATTER 0
 #define COLLECT 0
 #define REDUCE 0
 #define ALL_REDUCE 0
-#define PRIM_SEQUENTIAL 0
+#define PRIM_SEQUENTIAL 1
 #define PRIM_PARALLEL 0
 
 
-static void boost_serialization_test() {
+static void boost_serialization_test_vector() {
     //Test Boost Serialization over pipes using Boost Archives and Boost File Descriptors
     pid_t pid;
     int fd[2];
@@ -37,7 +39,6 @@ static void boost_serialization_test() {
     if((pid = fork()) != 0) {
         std::vector<int> v1 = {33, 5, 6543, 540, 23, 537, 345, 234, 4, 65, 946};
         printf("parent @pid:%d => vector v1 to be serialized:\n", getpid());
-        
         for(std::vector<int>::iterator it = v1.begin(); it != v1.end(); it++) {
             std::cout << *it << " ";
         }
@@ -62,6 +63,41 @@ static void boost_serialization_test() {
             std::cout << *it << " ";
         }
         std::cout << std::endl;
+    }
+}
+
+
+static void boost_serialization_test_edge() {
+    //Test Boost Serialization over pipes using Boost Archives and Boost File Descriptors
+    pid_t pid;
+    int fd[2];
+    pipe(fd);
+    
+    //Serialize Edge e1 in parent and send via i/o stream over pipe file descriptor to child
+    if((pid = fork()) != 0) {
+        Edge e1;
+        e1.e[0] = 4;
+        e1.e[1] = 5;
+        e1.weight = 5;
+        printf("parent @pid:%d => Edge e1 to be serialized: ", getpid());
+        std::cout << e1.e[0] << " " << e1.e[1] << " " << e1.weight << std::endl;
+        boost::iostreams::stream_buffer<boost::iostreams::file_descriptor_sink> sbw(fd[1], boost::iostreams::never_close_handle);
+        std::ostream os(&sbw);
+        boost::archive::text_oarchive oa(os);
+        oa << e1;
+    }
+    //De-Serialize Edge sent over stream buffer in child
+    else {
+        Edge e2;
+        printf("child @pid:%d => Edge e1 de-serialized: ", getpid());
+        
+        boost::iostreams::stream_buffer<boost::iostreams::file_descriptor_source> sbr(fd[0], boost::iostreams::never_close_handle);
+        std::istream is(&sbr);
+        boost::archive::text_iarchive ia(is);
+        ia >> e2;
+        
+        
+        std::cout << e2.e[0] << " " << e2.e[1] << " " << e2.weight << std::endl;
     }
 }
 
@@ -120,7 +156,7 @@ static void scatter_test() {
     PSim comm(4, SWITCH);
     std::vector<int> v = comm.one2all_scatter(0, v1);
     
-    printf("@process %d (pid %d) => My unique vector slice is:\n", comm.rank, getpid());
+    printf("@process %d (pid %d) => My unique vector slice is: ", comm.rank, getpid());
     for(std::vector<int>::iterator it = v.begin(); it != v.end(); it++) {
         std::cout << *it << " ";
     }
@@ -156,13 +192,17 @@ static void reduce_all_test() {
 
 
 /*
- *  MAIN()
+ *  Main()
+ *
  */
-
 int main(int argc, const char * argv[]) {
     
-#if(BOOST_SERIALIZATION)
-    boost_serialization_test();
+#if(BOOST_SERIALIZATION_VECT)
+    boost_serialization_test_vector();
+#endif
+
+#if(BOOST_SERIALIZATION_EDGE)
+    boost_serialization_test_edge();
 #endif
     
 #if(TOPOLOGY)
@@ -195,11 +235,106 @@ int main(int argc, const char * argv[]) {
     
 #if(PRIM_SEQUENTIAL)
     
+
+    
+    //open and read file of weighted undirected graph
+    int nVerts, nEdges;
+    std::ifstream infs("/Users/SamUddin/Desktop/graph1.txt");
+    std::cout << "Undirected Graph\n";
+    infs >> nVerts;
+    infs >> nEdges;
+    std::cout << "Vertices: " << nVerts << "\nEdges: " << nEdges << std::endl;
+    
+    //Dynamically allocate adjMat to serve as a nVerts x nVerts adjacency matrix for
+    //the weighted undirected graph
+    int **adjMat;
+    adjMat = new int*[nVerts];
+    for(int i = 0; i < nVerts; i++) {
+        adjMat[i] = new int[nVerts];
+    }
+    
+    //Zero out the adjaceny matrix
+    for(int i = 0; i < nVerts; i++) {
+        for(int j = 0; j < nVerts; j++) {
+            adjMat[i][j] = 0;
+        }
+    }
+    
+    int u, v, weight;
+    for (int i = 0; i < nEdges; i++) {
+        infs >> u;
+        infs >> v;
+        infs >> weight;
+        adjMat[u][v] = weight;
+        adjMat[v][u] = weight;
+    }
+    infs.close();
+    
+    //Print a representation of the adjacency matrix
+    for(int i = 0; i < nVerts; i++) {
+        for(int j = 0; j < nVerts; j++) {
+            std::cout << adjMat[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
+    
+    std::set<int> X;
+   
+    //We need an unordered_set<Edge> here with a custom hash function:
+    std::unordered_set<Edge, HashEdge> T;
+ 
+    
+    
+    //start at an arbitrary node -- 0
+    X.insert(0);
+    
+    while (X.size() != nVerts) {
+        Edge edgy;
+        int d = 0;
+        
+        //For each element x in set X, add Edge(x, k) to crossing if k is NOT in set X
+         
+        for(std::set<int>::iterator it = X.begin(); it != X.end(); it++) {
+            int x = *it;
+            for(int k = 0; k < nVerts; k++) {
+                
+                //if k is NOT in set X
+                if(X.find(k) == X.end()) {
+                    int link = adjMat[x][k];
+                    if(link != 0) {
+                        if(d == 0 || link < d) {
+                            edgy.set(x, k, adjMat[x][k]);
+                            d = link;
+                        }
+                    }
+                }
+            }
+        }
+        T.insert(edgy);        //Insert Edge edgy into the MST
+        X.insert(edgy.e[1]);   //Add the new vertex to set X
+    }
+    
+    //Print the Edges of the MST
+    std::cout << "-------------------\n";
+    for(std::unordered_set<Edge, HashEdge>::iterator treeIt = T.begin(); treeIt != T.end(); treeIt++) {
+        Edge ed = *treeIt;
+        
+        std::cout << ed.e[0] << " " << ed.e[1] << " " << ed.weight << std::endl;
+    }
+    
+    //Clean up
+    for(int i = 0; i < nVerts; i++){
+        delete adjMat[i];
+    }
+    delete [] adjMat;
+    
+    
 #endif
     
 #if(PRIM_PARALLEL)
     
 #endif
+    
     
     return 0;
 }
