@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <string>
 #include <functional>
-#include "psim.cpp"
+#include "psim.h"
 #include "primsAlgorithm.h"
 
 
@@ -26,7 +26,7 @@
 #define REDUCE 0
 #define ALL_REDUCE 0
 #define PRIM_SEQUENTIAL 0
-#define PRIM_PARALLEL 0
+#define PRIM_PARALLEL 1
 
 
 static void boost_serialization_test_vector() {
@@ -185,9 +185,15 @@ static void reduce_test() {
 
 
 static void reduce_all_test() {
-    PSim comm(6, SWITCH);
-    int red_sum = comm.all2all_reduce(comm.rank, sum);
-    printf("@process %d (pid %d) => reduction result of sum of all ranks is: %d\n", comm.rank, getpid(), red_sum);
+//    PSim comm(6, SWITCH);
+//    int red_sum = comm.all2all_reduce(comm.rank, sum);
+//    printf("@process %d (pid %d) => reduction result of sum of all ranks is: %d\n", comm.rank, getpid(), red_sum);
+    
+    PSim comm(5, SWITCH);
+    Edge tmp(3, comm.rank, comm.rank+3);
+    Edge red_sum = comm.all2all_reduce_E(tmp, edgemax);
+    printf("@process %d (pid %d) => reduction result of Edge weights is: ", comm.rank, getpid());
+    std::cout << red_sum;
 }
 
 
@@ -235,7 +241,7 @@ int main(int argc, const char * argv[]) {
     
 #if(PRIM_SEQUENTIAL)
     
-    Prim P("/Users/SamUddin/Desktop/graph1.txt", SEQUENTIAL);
+    Prim P("/Users/SamUddin/Desktop/graph1.txt", SEQUENTIAL, 0);
     P.run();
     
         
@@ -243,16 +249,15 @@ int main(int argc, const char * argv[]) {
     
 #if(PRIM_PARALLEL)
     
+    Prim P("/Users/SamUddin/Desktop/graph1.txt", PARALLEL, 2);
+    P.run();
+    
 #endif
     
     
 
     
-//    PSim comm(5, SWITCH);
-//    Edge tmp(3, comm.rank, comm.rank+3);
-//    Edge red_sum = comm.all2all_reduce_E(tmp, edgemin);
-//    printf("@process %d (pid %d) => reduction result of Edge weights is: ", comm.rank, getpid());
-//    std::cout << red_sum;
+    
     
     
     

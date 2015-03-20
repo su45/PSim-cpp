@@ -7,7 +7,7 @@
 //
 
 #include "primsAlgorithm.h"
-
+#include "psim.h"
 
 
 
@@ -16,7 +16,7 @@
  *  undirected weighted graph and an enum for sequential or parallel.
  *  If parallel, input # of processors for PSim.
  */
-Prim::Prim(const char* filename, PrimEnum typeIn, int nProcs = 0) {
+Prim::Prim(const char* filename, PrimEnum typeIn, int nProcs) {
     this->type = typeIn;
     this->nPsimProcs = nProcs;
     
@@ -133,7 +133,8 @@ void Prim::run_sequential() {
 }
 
 void Prim::run_parallel() {
-    
+    PSim comm(this->nPsimProcs, SWITCH);
+    std::cout << "rank: " << comm.rank;
 }
 
 

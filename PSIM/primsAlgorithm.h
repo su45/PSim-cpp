@@ -21,7 +21,7 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
-//#include "psim.cpp"
+//#include "psim.h"
 
 
 struct Edge {
@@ -69,14 +69,12 @@ struct Edge {
     }
 };
 
-//Hash function for Edge objects (for use is the unordered set)
+//Hash function for Edge objects (for use in the unordered set)
 struct HashEdge {
     size_t operator()(const Edge &edge) const{
         return std::hash<int>()(edge.e[0]) + std::hash<int>()(edge.e[1]) ;
     }
 };
-
-
 
 
 enum PrimEnum{
