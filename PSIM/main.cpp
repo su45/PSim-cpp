@@ -25,7 +25,7 @@
 #define COLLECT 0
 #define REDUCE 0
 #define ALL_REDUCE 0
-#define PRIM_SEQUENTIAL 1
+#define PRIM_SEQUENTIAL 0
 #define PRIM_PARALLEL 0
 
 
@@ -246,20 +246,13 @@ int main(int argc, const char * argv[]) {
 #endif
     
     
-//    PSim comm(6, SWITCH);
-//    Edge pre;
-//    Edge post(0, 4, 6);
-//    Edge e = (comm.rank == 0) ? post : pre;
-//    printf("@process %d (pid %d) => message PRE-BROADCAST is:", comm.rank, getpid());
-//    std::cout << e;
-//    sleep(1);
-//    e = comm.one2all_broadcast_E(0, e);
-//    printf("@process %d (pid %d) => message POST-BROADCAST is:", comm.rank, getpid());
-//    std::cout << e;
+
     
-    
-    
-    
+//    PSim comm(5, SWITCH);
+//    Edge tmp(3, comm.rank, comm.rank+3);
+//    Edge red_sum = comm.all2all_reduce_E(tmp, edgemin);
+//    printf("@process %d (pid %d) => reduction result of Edge weights is: ", comm.rank, getpid());
+//    std::cout << red_sum;
     
     
     

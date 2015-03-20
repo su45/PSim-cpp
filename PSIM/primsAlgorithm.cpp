@@ -14,9 +14,11 @@
 /*
  *  Constructor taking in the (absolute path) filename of an 
  *  undirected weighted graph and an enum for sequential or parallel.
+ *  If parallel, input # of processors for PSim.
  */
-Prim::Prim(const char* filename, PrimEnum typeIn) {
+Prim::Prim(const char* filename, PrimEnum typeIn, int nProcs = 0) {
     this->type = typeIn;
+    this->nPsimProcs = nProcs;
     
     //open and read file of weighted undirected graph
     std::ifstream infs(filename);

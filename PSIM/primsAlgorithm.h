@@ -88,11 +88,12 @@ enum PrimEnum{
 class Prim {
 public:
     
-    Prim(const char* filename, PrimEnum);
+    Prim(const char* filename, PrimEnum, int);
     ~Prim();
     void run();
     
     PrimEnum type;
+    int nPsimProcs;
     int nVerts;
     int nEdges;
     int **adjMatrix;

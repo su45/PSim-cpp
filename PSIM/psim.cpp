@@ -74,7 +74,9 @@ static std::function<int(int, int)> max = [](int a, int b) { return ((a > b) ? a
 static std::function<int(int, int)> min = [](int a, int b) { return ((a > b) ? b : a); };
 
 //Binop for comparing Edge objects against each other by weight: (Edge, Edge) => Edge
+
 static std::function<Edge(Edge, Edge)> edgemin = [](Edge a, Edge b) {return ((a.weight > b.weight) ? b : a); };
+static std::function<Edge(Edge, Edge)> edgemax = [](Edge a, Edge b) {return ((a.weight > b.weight) ? a : b); };
 
 //------------------------------------------------------------------------------------------------
 
@@ -244,7 +246,8 @@ public:
     }
     
     /*
-     *  Broadcast Edge 'value' to all processes from process 'source'
+     *  Broadcast EDGE 'value' to all processes from process 'source'
+     *  TODO: omit and implement generics/Templates
      */
     Edge one2all_broadcast_E(int source, Edge value) {
         if(this->rank == source) {
@@ -344,6 +347,27 @@ public:
         return result;
     }
     
+    /*
+     *  Reduction of each process's EDGE WEIGHT using (Edge, Edge) => Edge
+     *  the functor 'binop'. The result is stored is process 'destination.'
+     */
+    Edge all2one_reduce_E(int destination, Edge value, std::function<Edge(Edge, Edge)>& binop) {
+        this->_send_Edge(destination, value);
+        std::vector<Edge> v;
+        Edge result;
+        if(this->rank == destination) {
+            for(int i = 0; i < this->nprocs; i++) {
+                Edge tmp = this->_recv_Edge(i);
+                v.push_back(tmp);
+            }
+            result = std::accumulate(std::begin(v)+1, std::end(v), *std::begin(v), binop);
+        }
+        else {
+            result = Edge();
+        }
+        return result;
+    }
+    
     
     /*
      *  All to all reduction returning the reduction of each process's 'value' using
@@ -352,6 +376,16 @@ public:
     int all2all_reduce(int value, std::function<int(int, int)>& binop) {
         int reduction = all2one_reduce(0, value, binop);
         int all_reduction = one2all_broadcast(0, reduction);
+        return all_reduction;
+    }
+    
+    /*
+     *  All to all reduction returning the reduction of each process's Edge weighting using
+     *  the functor 'binop'. The result is broadcast to every process from process 0.
+     */
+    Edge all2all_reduce_E(Edge value, std::function<Edge(Edge, Edge)>& binop) {
+        Edge reduction = all2one_reduce_E(0, value, binop);
+        Edge all_reduction = one2all_broadcast_E(0, reduction);
         return all_reduction;
     }
     
