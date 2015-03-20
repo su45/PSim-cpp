@@ -186,7 +186,7 @@ Edge PSim::one2all_broadcast_E(int source, Edge value) {
 }
 
 /*
- *  Broadcast int 'value' to all processes
+ *  Broadcast int 'value' to all processes and returns a vector of each process's value
  */
 std::vector<int> PSim::all2all_broadcast(int value) {
     std::vector<int> vect, ret_vect;
@@ -274,13 +274,21 @@ int PSim::all2one_reduce(int destination, int value, std::function<int(int, int)
  *  the functor 'binop'. The result is stored is process 'destination.'
  */
 Edge PSim::all2one_reduce_E(int destination, Edge value, std::function<Edge(Edge, Edge)>& binop) {
-    this->_send_Edge(destination, value);
+    //Send if this process isn't the dest
+    if (this->rank != destination) {
+        this->_send_Edge(destination, value);
+    }
     std::vector<Edge> v;
     Edge result;
     if(this->rank == destination) {
         for(int i = 0; i < this->nprocs; i++) {
-            Edge tmp = this->_recv_Edge(i);
-            v.push_back(tmp);
+            if (i == destination) {
+                v.push_back(value);
+            }
+            else{
+                Edge tmp = this->_recv_Edge(i);
+                v.push_back(tmp);
+            }
         }
         result = std::accumulate(std::begin(v)+1, std::end(v), *std::begin(v), binop);
     }

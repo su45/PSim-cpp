@@ -103,8 +103,6 @@ void Prim::run_sequential() {
         Edge edgy;
         int d = 0;
         
-        //For each element x in set X, add Edge(x, k) to crossing if k is NOT in set X
-        
         for(std::set<int>::iterator it = X.begin(); it != X.end(); it++) {
             int x = *it;
             
@@ -181,7 +179,7 @@ void Prim::run_parallel() {
             }
             
         }
-        
+      
         edgy = comm.all2all_reduce_E(edgy, edgemin);
         T.insert(edgy);        //Insert Edge edgy into the MST
         X.insert(edgy.e[1]);   //Add the new vertex to set X

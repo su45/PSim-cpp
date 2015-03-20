@@ -25,8 +25,8 @@
 #define COLLECT 0
 #define REDUCE 0
 #define ALL_REDUCE 0
-#define PRIM_SEQUENTIAL 1
-#define PRIM_PARALLEL 0
+#define PRIM_SEQUENTIAL 0
+#define PRIM_PARALLEL 1
 
 
 static void boost_serialization_test_vector() {
@@ -249,7 +249,7 @@ int main(int argc, const char * argv[]) {
     
 #if(PRIM_PARALLEL)
     
-    Prim P("/Users/SamUddin/Desktop/graph1.txt", PARALLEL, 3);
+    Prim P("/Users/SamUddin/Desktop/graph1.txt", PARALLEL, 2);
     P.run();
     
 #endif
