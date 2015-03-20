@@ -6,6 +6,7 @@
 //  Copyright (c) 2015 Sam Uddin. All rights reserved.
 //
 
+#include <climits>
 #include "primsAlgorithm.h"
 #include "psim.h"
 
@@ -139,21 +140,61 @@ void Prim::run_parallel() {
     std::set<int> X;
     std::unordered_set<Edge, HashEdge> T;
     
-    //start at an arbitrary vertex --> 0
+    //start at an arbitrary vertex --> 0 for all p
     X.insert(0);
     
-    //Init PSim
     std::cout << "-------------------\n";
     std::cout << this->nPsimProcs << " processes running.\n";
+    
+    //Init PSim
     PSim comm(this->nPsimProcs, SWITCH);
     
     //Partition the set of vertices among the p processes
     int delta = (this->nVerts/comm.nprocs) + ((this->nVerts % comm.nprocs) ? 1 : 0);
     int vBegin = delta * comm.rank;
     int vEnd = (this->nVerts > (delta * (comm.rank+1))) ? (delta * (comm.rank+1)) : this->nVerts;
-    
     std::cout << "rank " << comm.rank << " pid:" << (int)getpid() << " >> vBegin: " << vBegin << " vEnd: " << vEnd << std::endl;
     
+    while (X.size() != this->nVerts) {
+        Edge edgy;
+        int d = INT_MAX;
+        
+        for(std::set<int>::iterator it = X.begin(); it != X.end(); it++) {
+            int x = *it;
+            
+            //Each process p iterates through its local set of vertices in parallel
+            for (int k = vBegin; k < vEnd; k++) {
+                
+                //if k is NOT in set X
+                if(X.find(k) == X.end()) {
+                    int link = this->adjMatrix[x][k];
+                    //If k is connected to x
+                    if(link != 0) {
+                        if(link < d) {
+                            edgy.set(x, k, this->adjMatrix[x][k]);
+                            d = link;
+                        }
+                        
+                    }
+                    
+                }
+            }
+            
+        }
+        
+        edgy = comm.all2all_reduce_E(edgy, edgemin);
+        T.insert(edgy);        //Insert Edge edgy into the MST
+        X.insert(edgy.e[1]);   //Add the new vertex to set X
+    }
+    
+    
+        //Print the Edges of the MST
+        std::cout << "-------------------\n";
+        std::cout << "MST edges (weight): \n";
+        for(std::unordered_set<Edge, HashEdge>::iterator treeIt = T.begin(); treeIt != T.end(); treeIt++) {
+            Edge ed = *treeIt;
+            std::cout << ed;
+        }
     
     
 }
