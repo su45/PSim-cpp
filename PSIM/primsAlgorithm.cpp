@@ -12,7 +12,7 @@
 
 
 /*
- *  Constructor taking in the (absolute path) filename of an 
+ *  Constructor taking in the filename of a text file of an
  *  undirected weighted graph and an enum for sequential or parallel.
  *  If parallel, input # of processors for PSim.
  */
@@ -90,11 +90,12 @@ void Prim::run() {
 }
 
 void Prim::run_sequential() {
+    
     std::set<int> X;
     //We need an unordered_set<Edge, HashEdge> here with a custom hash function and operator== :
     std::unordered_set<Edge, HashEdge> T;
     
-    //start at an arbitrary node -- 0
+    //start at an arbitrary vertex --> 0
     X.insert(0);
     
     while (X.size() != this->nVerts) {
@@ -105,6 +106,7 @@ void Prim::run_sequential() {
         
         for(std::set<int>::iterator it = X.begin(); it != X.end(); it++) {
             int x = *it;
+            
             for(int k = 0; k < this->nVerts; k++) {
                 
                 //if k is NOT in set X
@@ -133,8 +135,27 @@ void Prim::run_sequential() {
 }
 
 void Prim::run_parallel() {
+    
+    std::set<int> X;
+    std::unordered_set<Edge, HashEdge> T;
+    
+    //start at an arbitrary vertex --> 0
+    X.insert(0);
+    
+    //Init PSim
+    std::cout << "-------------------\n";
+    std::cout << this->nPsimProcs << " processes running.\n";
     PSim comm(this->nPsimProcs, SWITCH);
-    std::cout << "rank: " << comm.rank;
+    
+    //Partition the set of vertices among the p processes
+    int delta = (this->nVerts/comm.nprocs) + ((this->nVerts % comm.nprocs) ? 1 : 0);
+    int vBegin = delta * comm.rank;
+    int vEnd = (this->nVerts > (delta * (comm.rank+1))) ? (delta * (comm.rank+1)) : this->nVerts;
+    
+    std::cout << "rank " << comm.rank << " pid:" << (int)getpid() << " >> vBegin: " << vBegin << " vEnd: " << vEnd << std::endl;
+    
+    
+    
 }
 
 
