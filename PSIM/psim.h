@@ -2,8 +2,7 @@
 //  psim.h
 //  PSIM
 //
-//  Created by Sam Uddin on 3/20/15.
-//  Copyright (c) 2015 Sam Uddin. All rights reserved.
+//  Created by Sam Uddin
 //
 
 #ifndef PSIM_psim_h
@@ -18,7 +17,6 @@
 #include <vector>
 #include <iterator>
 #include <numeric>
-
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/serialization/vector.hpp>

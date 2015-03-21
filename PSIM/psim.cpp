@@ -6,13 +6,8 @@
  *  Ported from Massimo DiPierro's psim.py
  */
 
-
 #include "psim.h"
 
-
-
-
-    
 /*
  * CONSTRUCTOR
  * params:  int p: # of processors

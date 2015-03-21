@@ -25,8 +25,8 @@
 #define COLLECT 0
 #define REDUCE 0
 #define ALL_REDUCE 0
-#define PRIM_SEQUENTIAL 0
-#define PRIM_PARALLEL 1
+#define PRIM_SEQUENTIAL 1
+#define PRIM_PARALLEL 0
 
 
 static void boost_serialization_test_vector() {

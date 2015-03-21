@@ -10,8 +10,6 @@
 #include "primsAlgorithm.h"
 #include "psim.h"
 
-
-
 /*
  *  Constructor taking in the filename of a text file of an
  *  undirected weighted graph and an enum for sequential or parallel.
